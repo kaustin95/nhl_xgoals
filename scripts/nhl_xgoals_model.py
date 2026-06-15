@@ -83,6 +83,37 @@ def print_diagnostics(model, X, y, label):
     return proba
 
 
+def bootstrap_ci(y_true, y_proba, n_iterations=1000, ci=95, seed=42):
+    rng = np.random.default_rng(seed)
+    n = len(y_true)
+    y_true = np.asarray(y_true)
+    aucs, lls, briers = [], [], []
+
+    for _ in range(n_iterations):
+        idx = rng.integers(0, n, size=n)
+        yt, yp = y_true[idx], y_proba[idx]
+        if yt.sum() == 0 or yt.sum() == n:
+            continue
+        aucs.append(roc_auc_score(yt, yp))
+        lls.append(log_loss(yt, yp))
+        briers.append(brier_score_loss(yt, yp))
+
+    lo, hi = (100 - ci) / 2, 100 - (100 - ci) / 2
+    return {
+        'roc_auc':     (np.percentile(aucs,    lo), np.percentile(aucs,    hi)),
+        'log_loss':    (np.percentile(lls,     lo), np.percentile(lls,     hi)),
+        'brier_score': (np.percentile(briers,  lo), np.percentile(briers,  hi)),
+    }
+
+
+def print_test_ci(y_true, y_proba, n_iterations=1000):
+    print(f"\n=== Test (held-out) — 95% Bootstrap CI (n={n_iterations:,} resample) ===")
+    ci = bootstrap_ci(y_true, y_proba, n_iterations=n_iterations)
+    print(f"  ROC-AUC:      ({ci['roc_auc'][0]:.4f}, {ci['roc_auc'][1]:.4f})")
+    print(f"  Log Loss:     ({ci['log_loss'][0]:.4f}, {ci['log_loss'][1]:.4f})")
+    print(f"  Brier Score:  ({ci['brier_score'][0]:.4f}, {ci['brier_score'][1]:.4f})")
+
+
 def fit_calibration(model, X_val, y_val):
     iso = IsotonicRegression(out_of_bounds='clip')
     iso.fit(model.predict_proba(X_val)[:, 1], y_val)
@@ -182,6 +213,7 @@ def main():
     raw_train_proba = print_diagnostics(model, X_train, y_train, "Train")
     raw_val_proba   = print_diagnostics(model, X_val,   y_val,   "Validation")
     raw_test_proba  = print_diagnostics(model, X_test,  y_test,  "Test (held-out)")
+    print_test_ci(y_test.values, raw_test_proba)
 
     print("\nFitting isotonic calibration on validation set...")
     iso = fit_calibration(model, X_val, y_val)
