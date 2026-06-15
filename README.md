@@ -4,6 +4,8 @@ An expected goals model for NHL shots built with XGBoost, covering regular seaso
 
 Expected goals (xG) estimates the probability that a given shot results in a goal based on the shot's context — location, type, situation, and game state — independent of the shooter or goalie. This gives a more stable measure of shot quality than raw shot counts (whic are highly skewed).
 
+*A very important note is that the current model lumps all play states into one model - even strength (5v5, 4v4 etc) and uneven strength/powerplay (5v4, 4v3 etc) and empty net situations. As such, empty net situations dominate the main features (as expected)...v2 of the project will address different models for different play states.* 
+
 ## Results
 
 | Split | Seasons | Shots | ROC-AUC | Log Loss | Brier Score |
