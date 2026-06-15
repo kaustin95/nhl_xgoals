@@ -6,15 +6,23 @@ Expected goals (xG) estimates the probability that a given shot results in a goa
 
 ## Results
 
-| Split | Seasons | ROC-AUC | Log Loss | Brier Score |
-|-------|---------|---------|----------|-------------|
-| Train | 2012–13 to 2022–23 | 0.841 | 0.333 | 0.108 |
-| Validation | 2023–24 | 0.834 | 0.322 | 0.105 |
-| Test (held-out) | 2024–25 | 0.833 | 0.319 | 0.103 |
+| Split | Seasons | Shots | ROC-AUC | Log Loss | Brier Score |
+|-------|---------|-------|---------|----------|-------------|
+| Train | 2012–13 to 2022–23 | 1,642,183 | 0.841 | 0.333 | 0.108 |
+| Validation | 2023–24 | 182,118 | 0.834 | 0.322 | 0.105 |
+| Test (held-out) | 2024–25 | 177,892 | 0.833 | 0.319 | 0.103 |
+
+95% bootstrap confidence intervals on the test set (1,000 resamples):
+
+| Metric | Lower | Point estimate | Upper |
+|--------|-------|----------------|-------|
+| ROC-AUC | 0.8298 | 0.8329 | 0.8363 |
+| Log Loss | 0.3173 | 0.3189 | 0.3206 |
+| Brier Score | 0.1027 | 0.1033 | 0.1040 |
 
 The model is evaluated using probability-based metrics rather than accuracy. With goals occurring on ~5% of shots, a naive "never predict a goal" classifier would score 95% accuracy — AUC, log loss, and Brier score measure the full predicted probability distribution instead.
 
-Post-calibration, mean predicted xG (0.053) matches the observed goal rate (0.052).
+Post-calibration, mean predicted xG (0.053) matches the observed goal rate (0.052), across 17,416 games.
 
 ## Project Structure
 
